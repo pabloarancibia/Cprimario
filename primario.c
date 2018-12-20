@@ -31,10 +31,10 @@ int cambio;
 ///Fin Includes y defines viejos///
 ///Inicio Variables globales viejas///
 
-unsigned char  Buff[1024];
+unsigned char  Buff[1024];  
 unsigned char  CabBuffUDP[4],iwr_u=0,PlotBuffUDP[6];  /// //
 int iSendSock; ///int iSendSock;
-int UDP_PORT;  //Direccion puerto remoto///
+int UDP_PORT;  //Direccion puerto remoto/// 
 
 unsigned char  iwr=0,ird=0;
 unsigned FlagIni = 0;
@@ -66,40 +66,19 @@ void cabecera(char );
 void blancos(unsigned int , unsigned int , unsigned int );
 ///Fin declaracion funciones viejas///
 
-//declaraciones socket-e//
-#include<stdio.h>
-#include<string.h>
-#include<stdlib.h>
-#include<arpa/inet.h>
-#include<sys/socket.h>
-
-#define SERVER "127.0.0.1"
-#define BUFLEN 1024  //Max length of buffer
-#define PORT 113113   //The port on which to listen for incoming data
-//fin declaraciones socket-e//
 
 
 void ResetFifo()
 {
   *(uint32_t *)A_addr=0x4350;//-/ outpw(0x350,RSTFIFO); //enable datos
-  usleep(1000000);
-
-  *(uint32_t *)D_addr=RSTFIFO;
-  usleep(1000000);
-  *(uint32_t *)A_addr=0x2330;
-  printf("%x  ",*(uint32_t *)D_addr);
-  *(uint32_t *)A_addr=0x4350;
-  /// no hace falta porque permanece A en 0x2350 ///*(uint32_t *)A_addr=0x2350;//-/outpw(0x350,ENDATOS); //reset fifo
+  usleep(1000);
+     *(uint32_t *)D_addr=RSTFIFO;  /// no hace falta porque permanece A en 0x2350 ///*(uint32_t *)A_addr=0x2350;//-/outpw(0x350,ENDATOS); //reset fifo
+	 usleep(1000);
   *(uint32_t *)D_addr=ENDATOS;
- usleep(1000000);
-  *(uint32_t *)A_addr=0x2330;
- printf("%x  ",*(uint32_t *)D_addr);
-  /// no hace falta porque permanece A en 0x2350 ///*(uint32_t *)A_addr=0x2350;//-/ outpw(0x350,RSTFIFO); //enable datos
-   *(uint32_t *)A_addr=0x4350;
-  *(uint32_t *)D_addr=RSTFIFO;
-  usleep(1000000);
-  *(uint32_t *)A_addr=0x2330;
-  printf("%x  ",*(uint32_t *)D_addr);
+  usleep(1000);
+   *(uint32_t *)D_addr=RSTFIFO;
+   usleep(1000);
+
 }
 
 void InicializaPr()
@@ -349,51 +328,6 @@ PlotBuffUDP[iwr_u+1]=aux;
 //envio por UDP
 //if (WriteSocket(iSendSock, PlotBuffUDP, 6, NET_FLG_BROADCAST) < 0)//error
 //	    printf("Error on NetWrite %d bytes: %s\n", 4, Err(iNetErrNo));
-
-///////////////////////////////////////////////////////////////////////
-//-/INICIO SOCKETE ////////////////////////////////////////////////////
-struct sockaddr_in si_other;
-
-int s, i, slen = sizeof(si_other);
-char buf[BUFLEN];
-char *message="hola from server";//[BUFLEN];
-//create a UDP socket
-if ((s=socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
-{
-    die("socket");
-}
-
-// zero out the structure
-memset((char *) &si_other, 0, sizeof(si_other));
-si_other.sin_family = AF_INET;
-si_other.sin_port = htons(PORT);
-
-if (inet_aton(SERVER , &si_other.sin_addr) == 0)
-{
-    fprintf(stderr, "inet_aton() failed\n");
-    exit(1);
-}
-
-while(1)
-{
-    //send the message
-    if (sendto(s, PlotBuffUDP, 6 , 0 , (struct sockaddr *) &si_other, slen)==-1)
-    {
-        die("sendto()");
-    }
-    else
-    {
-        printf ("Success Send");
-    }
-}
-
-close(s);
-
-//-/return 0;
-
-
-//-/ FIN SOCKETE ////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////
        iwr_u=0;
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -678,7 +612,7 @@ int main (){
   unsigned int Dato,xxx,xxx_ant;
   unsigned long kk;
   unsigned char jumper,swich,inhibicion;
-
+  
 //Apertura de la memoria del HPS, el mapeo y el direccionamiento de los vectores D y A
   fd=open("/dev/mem",(O_RDWR|O_SYNC));
   virtual_base=mmap(NULL,REG_SPAN,(PROT_READ|PROT_WRITE),MAP_SHARED,fd,REG_BASE);
@@ -686,7 +620,7 @@ int main (){
   A_addr=virtual_base+ESCRITURA_BASE;
 
 	printf("\nSe realizo exitosamente la apertura del puente\n");
-
+	
   //llamada a Funciones
   ResetFifo();
   printf("\nFifo reseteada\n");
@@ -694,17 +628,17 @@ int main (){
 	printf("Parametros inicializados\n");
 	printf("Comienza lectura de jumpers\n");
   //Lee estado de jumpers
-
+  
  	*(uint32_t *)A_addr=0x2300; //-/ jumper=inp(0x300);
-  usleep(1000000);
+  usleep(1000);
   jumper=*(uint32_t *)D_addr;
- 	printf("%x  ",*(uint32_t *)D_addr);
-	*(uint32_t *)A_addr=0x2310;
-	usleep(1000000);
-	printf("\n%i\n",*(uint32_t *)D_addr);
-	*(uint32_t *)A_addr=0x2330;
-	usleep(1000000);
-	printf("\n%i\n",*(uint32_t *)D_addr);
+ 	 printf("%x  ",jumper);
+	// *(uint32_t *)A_addr=0x2310;
+	// usleep(1000);
+	// printf("\n%i\n",*(uint32_t *)D_addr);
+	// *(uint32_t *)A_addr=0x2330;
+	// usleep(1000);
+	// printf("\n%i\n",*(uint32_t *)D_addr);
  	 //JMP0
  	eco=jumper & 0x01;
  	if(eco)
@@ -768,149 +702,4 @@ int main (){
 return 0;
 }
 }
-/////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////SOCKET-E///////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////
-//int socketudp()
-//{
-//
 
-//Server.c
-/*
-#include<stdio.h>
-#include<string.h>
-#include<stdlib.h>
-#include<arpa/inet.h>
-#include<sys/socket.h>
-
-#define SERVER "127.0.0.1"
-#define BUFLEN 1024  //Max length of buffer
-#define PORT 113113   //The port on which to listen for incoming data
-*/
-void die(char *s)
-{
-    perror(s);
-    exit(1);
-}
-
-int altaSockete(void)
-{
-    struct sockaddr_in si_other;
-
-    int s, i, slen = sizeof(si_other);
-    char buf[BUFLEN];
-    char *message="hola from server";//[BUFLEN];
-    //create a UDP socket
-    if ((s=socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
-    {
-        die("socket");
-    }
-
-    // zero out the structure
-    memset((char *) &si_other, 0, sizeof(si_other));
-    si_other.sin_family = AF_INET;
-    si_other.sin_port = htons(PORT);
-
-    if (inet_aton(SERVER , &si_other.sin_addr) == 0)
-    {
-        fprintf(stderr, "inet_aton() failed\n");
-        exit(1);
-    }
-
-    /*while(1)
-    {
-        //send the message
-        if (sendto(s, (const char *)message, strlen(message) , 0 , (struct sockaddr *) &si_other, slen)==-1)
-        {
-            die("sendto()");
-        }
-        else
-        {
-            printf ("Success Send");
-        }
-    }
-
-    close(s);
-    */
-    return 0;
-//}
-
-
-
-
-//Client.c
-/*
-#include<stdio.h> //printf
-#include<string.h> //memset
-#include<stdlib.h> //exit(0);
-#include<arpa/inet.h>
-#include<sys/socket.h>
-
-
-#define BUFLEN 1024  //Max length of buffer
-#define PORT 113113   //The port on which to send data
-
-void die(char *s)
-{
-    perror(s);
-    exit(1);
-}
-
-int main(void)
-{
-    struct sockaddr_in si_me, si_other;
-    int s, i, slen=sizeof(si_other), recv_len;
-    char buf[BUFLEN];
-    char message[BUFLEN];
-
-    if ( (s=socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
-    {
-        die("socket");
-    }else{
-    printf ("socket ok!\n");
-    }
-
-    // zero out the structure
-    memset((char *) &si_me, 0, sizeof(si_me));
-
-    si_me.sin_family = AF_INET;
-    si_me.sin_port = htons(PORT);
-    si_me.sin_addr.s_addr = htonl(INADDR_ANY);
-
-   if( bind(s , (struct sockaddr*)&si_me, sizeof(si_me) ) == -1)
-    {
-        die("bind");
-    }
-    else
-    {
-        printf ("Success!\n");
-    }
-
-
-    while(1)
-    {
-        printf("Waiting for data...\n");
-        fflush(stdout);
-
-
-
-        //try to receive some data, this is a blocking call
-        if ((recv_len = recvfrom(s, buf, BUFLEN, 0, (struct sockaddr *) &si_other, &slen)) == -1)
-        {
-            die("recvfrom()");
-        }
-
-        //print details of the client/peer and the data received
-        printf("Received packet from %s:%d\n", inet_ntoa(si_other.sin_addr), ntohs(si_other.sin_port));
-        printf("Data: %s\n" , buf);
-    }
-
-    close(s);
-    return 0;
-}
-*/
-
-
-}
