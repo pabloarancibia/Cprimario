@@ -31,10 +31,10 @@ int cambio;
 ///Fin Includes y defines viejos///
 ///Inicio Variables globales viejas///
 
-unsigned char  Buff[1024];  
+unsigned char  Buff[1024];
 unsigned char  CabBuffUDP[4],iwr_u=0,PlotBuffUDP[6];  /// //
 int iSendSock; ///int iSendSock;
-int UDP_PORT;  //Direccion puerto remoto/// 
+int UDP_PORT;  //Direccion puerto remoto///
 
 unsigned char  iwr=0,ird=0;
 unsigned FlagIni = 0;
@@ -66,7 +66,18 @@ void cabecera(char );
 void blancos(unsigned int , unsigned int , unsigned int );
 ///Fin declaracion funciones viejas///
 
+////////DECLARACIONES SOCKETE//////////
+#include<stdio.h>
+#include<string.h>
+#include<stdlib.h>
+#include<arpa/inet.h>
+#include<sys/socket.h>
 
+#define SERVER "127.0.0.1"
+#define BUFLEN 1024  //Max length of buffer
+#define PORT 113113   //The port on which to listen for incoming data
+
+//////////FIN DECLARACIONES SOCKETE///////////
 
 void ResetFifo()
 {
@@ -325,6 +336,77 @@ aux=PlotBuffUDP[iwr_u];
 PlotBuffUDP[iwr_u]=PlotBuffUDP[iwr_u+1];
 PlotBuffUDP[iwr_u+1]=aux;
 }
+
+/////////////////////////////////////////////////////
+//////////////////////////SOCKETE////////////////////
+void die(char *s)
+{
+    perror(s);
+    exit(1);
+}
+    struct sockaddr_in si_other;
+
+    int s, i, slen = sizeof(si_other);
+    char buf[BUFLEN];
+    char *message="hola from server";//[BUFLEN];
+    //create a UDP socket
+    if ((s=socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
+    {
+        die("socket");
+    }
+
+    // zero out the structure
+    memset((char *) &si_other, 0, sizeof(si_other));
+    si_other.sin_family = AF_INET;
+    si_other.sin_port = htons(PORT);
+
+    if (inet_aton(SERVER , &si_other.sin_addr) == 0)
+    {
+        fprintf(stderr, "inet_aton() failed\n");
+        exit(1);
+    }
+
+    //bind socket to port
+    /*if( bind(s , (struct sockaddr*)&si_other, sizeof(si_other) ) == -1)
+    {
+        die("bind");
+    }
+    else
+    {
+        printf ("Success Bind");
+    }*/
+
+
+  //  while(1)
+    //{
+        //printf("Enter message : ");
+        //gets(message);
+        //message[0] = "tu pendex";
+
+        //send the message
+        //if (sendto(s, (const char *)message, strlen(message) , 0 , (struct sockaddr *) &si_other, slen)==-1)
+        if (sendto(s, PlotBuffUDP, 6 , 0 , (struct sockaddr *) &si_other, slen)==-1)
+        {
+            die("sendto()");
+        }
+        else
+        {
+            printf ("Success Send");
+        }
+
+    //}
+
+//close(s);
+    //return 0;
+    close(s);
+
+
+
+
+
+////////////////////FIN SOCKETE//////////////////////
+/////////////////////////////////////////////////////
+
 //envio por UDP
 //if (WriteSocket(iSendSock, PlotBuffUDP, 6, NET_FLG_BROADCAST) < 0)//error
 //	    printf("Error on NetWrite %d bytes: %s\n", 4, Err(iNetErrNo));
@@ -612,7 +694,7 @@ int main (){
   unsigned int Dato,xxx,xxx_ant;
   unsigned long kk;
   unsigned char jumper,swich,inhibicion;
-  
+
 //Apertura de la memoria del HPS, el mapeo y el direccionamiento de los vectores D y A
   fd=open("/dev/mem",(O_RDWR|O_SYNC));
   virtual_base=mmap(NULL,REG_SPAN,(PROT_READ|PROT_WRITE),MAP_SHARED,fd,REG_BASE);
@@ -620,7 +702,7 @@ int main (){
   A_addr=virtual_base+ESCRITURA_BASE;
 
 	printf("\nSe realizo exitosamente la apertura del puente\n");
-	
+
   //llamada a Funciones
   ResetFifo();
   printf("\nFifo reseteada\n");
@@ -628,7 +710,7 @@ int main (){
 	printf("Parametros inicializados\n");
 	printf("Comienza lectura de jumpers\n");
   //Lee estado de jumpers
-  
+
  	*(uint32_t *)A_addr=0x2300; //-/ jumper=inp(0x300);
   usleep(1000);
   jumper=*(uint32_t *)D_addr;
@@ -702,4 +784,3 @@ int main (){
 return 0;
 }
 }
-
